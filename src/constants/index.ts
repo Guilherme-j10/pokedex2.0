@@ -22,7 +22,7 @@ export interface ITypesColor {
 
 export const TypesColor = {
   bug: '#54d370',
-  standard: '#333',
+  standard: '#ebebeb',
   dark: '#9b9bce',
   dragon: '#62cad9',
   electric: '#ffc800',

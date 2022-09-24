@@ -6,11 +6,19 @@ import { BasicInfo, IPokemonList } from './Dtos/interface';
 import axios from 'axios';
 import normalize from 'react-native-normalize';
 import BoxPokemon from '../../components/BoxPokemon';
+import Animated, { Extrapolate, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-export const PokemonList: React.FC = () => {
+interface IProps {
+  navigation: StackNavigationProp<any, any>
+}
+
+export const PokemonList: React.FC <IProps> = ({ navigation }) => {
 
   const [ Next_Request, setNext_Request ] = useState('');
   const [ data, setdata ] = useState<BasicInfo[]>([]);
+
+  const scrollHeightClient = useSharedValue(0);
 
   const getPokemonData = async () => {
 
@@ -24,13 +32,68 @@ export const PokemonList: React.FC = () => {
 
   };
 
-  const RenderItem = useCallback((data: any) => <BoxPokemon data={data.item} second={false} />, []);
+  const RenderItem = useCallback((data: any) => <BoxPokemon data={data.item} navigation={navigation} second={false} />, []);
   const keyExtractor = useCallback((data: BasicInfo) => data.name, []);
   const getItemLayout = useCallback((_: any, index: any) => ({
     length: normalize(140) + normalize(20), 
     offset: (normalize(140) + normalize(20)) * index,
     index: index
   }), []);
+
+  const onScrollEvent = useAnimatedScrollHandler((event: any) => {
+    scrollHeightClient.value = event.contentOffset.y;
+  });
+
+  const min_height = normalize(60);
+  const max_height = normalize(110);
+
+  const AnimatedHeightbar = useAnimatedStyle(() => {
+
+    const interpolated_value = interpolate(
+      scrollHeightClient.value,
+      [0, 100],
+      [max_height, min_height],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      height: interpolated_value
+    }
+
+  });
+
+  const AnimatedArrowBack = useAnimatedStyle(() => {
+
+    const interpolated_opacity = interpolate(
+      scrollHeightClient.value,
+      [0, 80],
+      [1, 0],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      opacity: interpolated_opacity
+    }
+
+  });
+
+  const normal_padding = normalize(120);
+  const custom_padding = normalize(155);
+
+  const animatedPaddingTopList = useAnimatedStyle(() => {
+
+    const interpolated_opacity = interpolate(
+      scrollHeightClient.value,
+      [0, 100],
+      [normal_padding, custom_padding],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      paddingTop: interpolated_opacity
+    }
+
+  })
 
   useEffect(() => {
 
@@ -40,31 +103,35 @@ export const PokemonList: React.FC = () => {
 
   return(
     <View style={PokemonListStyle.Container}>
-      <View style={PokemonListStyle.ContainerHeaderGlobal}>
-        <View style={PokemonListStyle.ContainerHeader}>
-          <TouchableOpacity>
-            <Feather name="arrow-left" size={24} color="#444" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Feather name="menu" size={24} color="#444" />
-          </TouchableOpacity>
-        </View>
-        <Text style={PokemonListStyle.TextContent}>Pokedex</Text>
-      </View>
-      <FlatList
-        data={data} 
+      <Animated.FlatList
+        data={data}
+        onScroll={onScrollEvent}
         keyExtractor={keyExtractor}  
         overScrollMode='never'
         decelerationRate={0.96}
-        windowSize={62}
+        windowSize={124}
         scrollEventThrottle={16}
         onEndReachedThreshold={1}
         onEndReached={() => getPokemonData()}
         numColumns={2}
+        style={animatedPaddingTopList}
         columnWrapperStyle={{ alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: normalize(20) }}
         renderItem={RenderItem}
         getItemLayout={getItemLayout}
       />
+      <Animated.View style={[AnimatedHeightbar, PokemonListStyle.ContainerHeaderGlobal]}>
+        <View style={PokemonListStyle.ContainerHeader}>
+          <Animated.View style={AnimatedArrowBack}>
+            <TouchableOpacity>
+              <Feather name="arrow-left" size={24} color="#444" />
+            </TouchableOpacity>
+          </Animated.View>
+          <TouchableOpacity style={PokemonListStyle.fixedButton}>
+            <Feather name="menu" size={24} color="#444" />
+          </TouchableOpacity>
+        </View>
+        <Text style={PokemonListStyle.TextContent}>Pokedex</Text>
+      </Animated.View>
     </View>
   );
 }

@@ -38,5 +38,23 @@ export const StyleBox = StyleSheet.create({
     paddingVertical: normalize(6),
     alignItems: 'center',
     marginBottom: normalize(5)
+  },
+  ImageContent: {
+    width: normalize(80),
+    height: normalize(80),
+    position: 'absolute',
+    bottom: normalize(5),
+    right: normalize(5)
+  },
+  containerLoading: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  TextMessage: {
+    fontFamily: 'Ubuntu_500Medium',
+    marginTop: normalize(10),
+    color: '#666'
   }
 })

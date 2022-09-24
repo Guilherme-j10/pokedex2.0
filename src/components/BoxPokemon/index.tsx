@@ -1,15 +1,18 @@
 import React, {  useEffect, useState, memo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Pressable, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { BasicInfo } from '../../screens/pokemonList/Dtos/interface';
 import { StyleBox } from './style';
 import axios from 'axios';
 import { IPokemonData } from './Dtos/interface';
 import { TypesColor, ITypesColor } from '../../constants';
 import { ConditionalRender } from '../ConditionalReder';
+import { SharedElement } from 'react-navigation-shared-element';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 interface IProps {
   data: BasicInfo,
-  second: boolean
+  second: boolean,
+  navigation: StackNavigationProp<any, any>
 }
 
 const BoxPokemon: React.FC <IProps> = (props) => {
@@ -25,12 +28,20 @@ const BoxPokemon: React.FC <IProps> = (props) => {
   } 
 
   useEffect(() => { getPokemonInformation(); }, []);
+
+  const redirectToDetailScreen = (): void => {
+
+    props.navigation.push('PekomonDetail', {
+      Pokemon_information
+    })
+
+  }
   
   return(
-    <View style={[
+    <TouchableOpacity style={[
       StyleBox.BoxContainer,
       { backgroundColor: TypesColor[Pokemon_information.types ? Pokemon_information?.types[0]?.type?.name as keyof ITypesColor : 'standard'] }
-    ]}>
+    ]} onPress={() => redirectToDetailScreen()} activeOpacity={.9}>
       <ConditionalRender conditional={Object.keys(Pokemon_information).length}>
         <Text style={StyleBox.titleId}>#{Pokemon_information.id}</Text>
         <View style={StyleBox.BoxPokemonInformation}>
@@ -43,8 +54,17 @@ const BoxPokemon: React.FC <IProps> = (props) => {
             </View>
           )) : false}
         </View>
+        <SharedElement id={`${Pokemon_information.id || ''}`} style={StyleBox.ImageContent}>
+          <Image style={StyleBox.ImageContent} source={{uri: Pokemon_information?.sprites?.other?.home?.front_default || ''}} />
+        </SharedElement>
       </ConditionalRender>
-    </View>
+      <ConditionalRender conditional={!Object.keys(Pokemon_information).length}>
+        <View style={StyleBox.containerLoading}>
+          <ActivityIndicator size={'large'} color='#999' />
+          <Text style={StyleBox.TextMessage}>Carregando...</Text>
+        </View>
+      </ConditionalRender>
+    </TouchableOpacity>
   );
 }
 

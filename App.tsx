@@ -1,12 +1,13 @@
 import { useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PokemonList } from './src/screens/pokemonList';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Ubuntu_400Regular, Ubuntu_300Light, Ubuntu_500Medium } from '@expo-google-fonts/ubuntu';
+import { PokemonDetail } from './src/screens/PokemonDetail';
+import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
 
-const Stack = createNativeStackNavigator();
+const Stack = createSharedElementStackNavigator();
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
@@ -26,15 +27,29 @@ export default function App() {
   spash();
 
   if(!fontsLoaded) return null;
- 
+
+  const forFade = ({ current }: any) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
+
   return (
     <>
       <StatusBar style="dark" translucent={true} />
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{
-          headerShown: false
-        }}>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            presentation: 'card',
+            cardStyleInterpolator: forFade
+          }}
+        >
           <Stack.Screen name='PokeList' component={PokemonList} />
+          <Stack.Screen name='PekomonDetail' component={PokemonDetail} sharedElements={(route, otherRoute, showing) => {
+            const { Pokemon_information } = route.params;
+            return [`${Pokemon_information.id}`];
+          }}/>
         </Stack.Navigator>
       </NavigationContainer>
     </>

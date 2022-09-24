@@ -11,9 +11,12 @@ export const PokemonListStyle = StyleSheet.create({
   },
   ContainerHeaderGlobal: {
     width: '100%',
+    position: 'absolute',
+    backgroundColor: '#fff',
     paddingHorizontal: normalize(20),
+    marginTop: Constants.statusBarHeight,
     paddingTop: normalize(20),
-    marginBottom: normalize(20)
+    paddingBottom: normalize(20)
   },
   ContainerHeader: {
     width: '100%',
@@ -25,7 +28,14 @@ export const PokemonListStyle = StyleSheet.create({
   TextContent: {
     fontFamily: 'Ubuntu_500Medium',
     fontSize: 30,
-    color: '#',
-    marginTop: normalize(20)
+    color: '#444',
+    position: 'absolute',
+    left: normalize(20),
+    bottom: normalize(14)
+  },
+  fixedButton: {
+    position: 'absolute',
+    top: normalize(2),
+    right: normalize(0)   
   }
 });
