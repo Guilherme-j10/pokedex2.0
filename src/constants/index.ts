@@ -28,7 +28,7 @@ export const TypesColor = {
   electric: '#ffc800',
   fairy: '#e36798',
   fighting: '#e28063',
-  fire: '#ea3e4d',
+  fire: '#FF6E6E',
   flying: '#94b2c7',
   ghost: '#c78cc8',
   grass: '#6de08a',

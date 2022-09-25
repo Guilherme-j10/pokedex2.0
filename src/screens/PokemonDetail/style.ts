@@ -5,7 +5,6 @@ import Constants from 'expo-constants';
 export const PokeDetail = StyleSheet.create({
   ContainerGlobal: {
     paddingTop: Constants.statusBarHeight,
-    paddingHorizontal: normalize(30)
   },
   Header: {
     width: '100%',
@@ -13,17 +12,19 @@ export const PokeDetail = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: normalize(30),
+    paddingHorizontal: normalize(30)
   },
   AnimatedImagePokemon: {
-    width: normalize(150),
-    height: normalize(150)
+    width: normalize(190),
+    height: normalize(190)
   },
   LineName: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: normalize(25)
+    marginTop: normalize(25),
+    paddingHorizontal: normalize(30)
   },
   TextNamePokemon: {
     fontFamily: 'Ubuntu_500Medium',
@@ -39,7 +40,8 @@ export const PokeDetail = StyleSheet.create({
     width: '100%',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    paddingHorizontal: normalize(30)
   },
   ContainerType: {
     width: normalize(70),
