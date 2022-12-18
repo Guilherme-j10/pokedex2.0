@@ -14,9 +14,17 @@ export const PokeDetail = StyleSheet.create({
     paddingTop: normalize(30),
     paddingHorizontal: normalize(30)
   },
+  ContainerImagePokemonMain: {
+    width: `100%`,
+    height: normalize(190),
+    alignItems: 'center',
+    justifyContent: 'center',
+    
+  },
   AnimatedImagePokemon: {
     width: normalize(190),
-    height: normalize(190)
+    height: normalize(190),
+    backgroundColor: 'red'
   },
   LineName: {
     width: '100%',
@@ -58,8 +66,16 @@ export const PokeDetail = StyleSheet.create({
   },
   ContainerImage: {
     width: '100%',
+    height: normalize(190),
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: normalize(70)
+    marginTop: normalize(60)
+  },
+  ImageContent:{
+    width: normalize(190),
+    position: 'absolute',
+    height: normalize(190),
+    bottom: 0,
+    opacity: 0.5
   }
 });

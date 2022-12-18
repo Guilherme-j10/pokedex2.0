@@ -5,9 +5,12 @@ import { PokemonList } from './src/screens/pokemonList';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Ubuntu_400Regular, Ubuntu_300Light, Ubuntu_500Medium } from '@expo-google-fonts/ubuntu';
 import { PokemonDetail } from './src/screens/PokemonDetail';
-import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { QueryClientProvider, QueryClient } from 'react-query';
 
-const Stack = createSharedElementStackNavigator();
+const query_client = new QueryClient();
+
+const Stack = createNativeStackNavigator();
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
@@ -20,13 +23,13 @@ export default function App() {
 
   const spash = useCallback(async () => {
 
-    if(fontsLoaded) await SplashScreen.hideAsync();
+    if (fontsLoaded) await SplashScreen.hideAsync();
 
   }, [fontsLoaded])
 
   spash();
 
-  if(!fontsLoaded) return null;
+  if (!fontsLoaded) return null;
 
   const forFade = ({ current }: any) => ({
     cardStyle: {
@@ -37,21 +40,20 @@ export default function App() {
   return (
     <>
       <StatusBar style="dark" translucent={true} />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            presentation: 'card',
-            cardStyleInterpolator: forFade
-          }}
-        >
-          <Stack.Screen name='PokeList' component={PokemonList} />
-          <Stack.Screen name='PekomonDetail' component={PokemonDetail} sharedElements={(route, otherRoute, showing) => {
-            const { Pokemon_information } = route.params;
-            return [`${Pokemon_information.id}`];
-          }}/>
-        </Stack.Navigator>
-      </NavigationContainer>
+      <QueryClientProvider client={query_client}>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+              presentation: 'card'
+            }}
+          >
+            <Stack.Screen name='PokeList' component={PokemonList} />
+            <Stack.Screen name='PekomonDetail' component={PokemonDetail} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </QueryClientProvider>
+
     </>
   );
 }

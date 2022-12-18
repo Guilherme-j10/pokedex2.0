@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native'; 
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { PokemonListStyle } from './style';
 import { Feather } from '@expo/vector-icons';
 import { BasicInfo, IPokemonList } from './Dtos/interface';
@@ -13,10 +13,10 @@ interface IProps {
   navigation: StackNavigationProp<any, any>
 }
 
-export const PokemonList: React.FC <IProps> = ({ navigation }) => {
+export const PokemonList: React.FC<IProps> = ({ navigation }) => {
 
-  const [ Next_Request, setNext_Request ] = useState('');
-  const [ data, setdata ] = useState<BasicInfo[]>([]);
+  const [Next_Request, setNext_Request] = useState('');
+  const [data, setdata] = useState<BasicInfo[]>([]);
 
   const scrollHeightClient = useSharedValue(0);
 
@@ -35,7 +35,7 @@ export const PokemonList: React.FC <IProps> = ({ navigation }) => {
   const RenderItem = useCallback((data: any) => <BoxPokemon data={data.item} navigation={navigation} second={false} />, []);
   const keyExtractor = useCallback((data: BasicInfo) => data.name, []);
   const getItemLayout = useCallback((_: any, index: any) => ({
-    length: normalize(140) + normalize(20), 
+    length: normalize(140) + normalize(20),
     offset: (normalize(140) + normalize(20)) * index,
     index: index
   }), []);
@@ -101,12 +101,12 @@ export const PokemonList: React.FC <IProps> = ({ navigation }) => {
 
   }, [])
 
-  return(
+  return (
     <View style={PokemonListStyle.Container}>
       <Animated.FlatList
         data={data}
         onScroll={onScrollEvent}
-        keyExtractor={keyExtractor}  
+        keyExtractor={keyExtractor}
         overScrollMode='never'
         decelerationRate={0.96}
         windowSize={124}

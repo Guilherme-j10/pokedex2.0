@@ -1,152 +1,135 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated } from 'react-native';
-import { SharedElement } from 'react-navigation-shared-element';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { IPokemonData } from '../../components/BoxPokemon/Dtos/interface';
 import { ITypesColor, TypesColor } from '../../constants';
 import { PokeDetail } from './style';
 import axios from 'axios';
 import { ConditionalRender } from '../../components/ConditionalReder';
-import normalize from 'react-native-normalize';
+import Animated, { cancelAnimation, Easing, interpolateColor, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { Pokemon } from '../../components/Pokemon';
+import { useQuery } from 'react-query';
+import { v4 } from 'uuid';
+import { LoadingComponent } from '../../components/LoadingComponent';
+
 
 interface IProps {
   navigation: StackNavigationProp<any, any>,
   route: any
 }
 
-export const PokemonDetail: React.FC <IProps> = ({ route, navigation }) => {
+const { width } = Dimensions.get('window');
 
-  const { Pokemon_information } = route.params;
-  const pokemon = Pokemon_information as IPokemonData;
+export const PokemonDetail: React.FC<IProps> = ({ route, navigation }) => {
 
-  const ScrollX = useRef(new Animated.Value(0)).current;
-  
-  const [ pokemon_informations_others, set_pokemon_informations_others ] = useState([] as IPokemonData[]);
+  const { Pokemon_information } = route.params as { Pokemon_information: IPokemonData };
 
-  const { width } = Dimensions.get('window');
+  const getMoreTeenPokemons = async (): Promise<IPokemonData[]> => {
 
-  const CONTAINER_POKEMON_IMAGE_WIDTH = normalize(190);
-  const SPACE = (width - CONTAINER_POKEMON_IMAGE_WIDTH) / 2;
-
-  const getMoreTeenPokemons = async (): Promise<void> => {
-
-    const initial_index = pokemon.id;
-    const final_index = pokemon.id + 10;
+    const initial_index = Pokemon_information.id;
+    const final_index = Pokemon_information.id + 10;
 
     let local_data_sotrage = [] as IPokemonData[];
 
-    for(let x = initial_index; x <= final_index; x++) {
+    for (let x = initial_index; x <= final_index; x++) {
 
       const pokemon_data = await axios.get<IPokemonData>(`https://pokeapi.co/api/v2/pokemon/${x}`);
 
-      local_data_sotrage = [ ...local_data_sotrage, pokemon_data.data ];
+      local_data_sotrage = [...local_data_sotrage, pokemon_data.data];
 
     }
 
-    set_pokemon_informations_others([ { name: 'space' } as any, ...local_data_sotrage, { name: 'space' } as any ]);
+    return local_data_sotrage;
 
   }
 
-  useEffect(() => {
+  const { data, isLoading } = useQuery(`pokemon:${Pokemon_information.id}`, () => getMoreTeenPokemons()) as { data: IPokemonData[], isLoading: boolean }
 
-    setTimeout(() => getMoreTeenPokemons(), 300);
+  const position_x = useSharedValue(0);
 
-  }, []);
+  const scroll_events = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      position_x.value = event.contentOffset.x
+    }
+  });
+
+  const colors_interpolated = useAnimatedStyle(() => {
+
+    const interpolated_color = interpolateColor(
+      position_x.value,
+      (data || []).length ? (data || []).map((_, index) => width * index) : [width, width * 2],
+      (data || []).length ? (data || []).map((pokemon) => TypesColor[pokemon.types[0].type.name as keyof ITypesColor]) :
+        [
+          TypesColor[Pokemon_information.types[0].type.name as keyof ITypesColor],
+          TypesColor[Pokemon_information.types[0].type.name as keyof ITypesColor]
+        ]
+    )
+
+    return {
+      backgroundColor: interpolated_color
+    }
+  }, [(data || [])]);
 
   return (
-    <View 
+    <Animated.View
       style={
         [
-          StyleSheet.absoluteFillObject, 
+          StyleSheet.absoluteFillObject,
           PokeDetail.ContainerGlobal,
-          { backgroundColor: TypesColor[pokemon.types[0].type.name as keyof ITypesColor] }
+          { backgroundColor: TypesColor[Pokemon_information.types[0].type.name as keyof ITypesColor] },
+          colors_interpolated
         ]
       }
     >
-      <View style={PokeDetail.Header}>
-        <TouchableOpacity>
-          <Feather name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Feather name="heart" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <View style={PokeDetail.LineName}>
-        <Text style={PokeDetail.TextNamePokemon} adjustsFontSizeToFit>{pokemon.name[0].toUpperCase()+pokemon.name.substring(1)}</Text>
-        <Text style={PokeDetail.id}>#{pokemon.id}</Text>
-      </View>
-      <View style={PokeDetail.types}>
-        {pokemon.types.map((dados, index) => (
-          <View style={PokeDetail.ContainerType} key={index}>
-            <Text style={PokeDetail.Typename}>{dados.type.name}</Text>
+      <ConditionalRender conditional={isLoading}>
+        <LoadingComponent />
+      </ConditionalRender>
+      <ConditionalRender conditional={!isLoading}>
+        <View style={PokeDetail.Header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Feather name="arrow-left" size={24} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Feather name="heart" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={PokeDetail.LineName}>
+          <Text style={PokeDetail.TextNamePokemon} adjustsFontSizeToFit>{Pokemon_information.name[0].toUpperCase() + Pokemon_information.name.substring(1)}</Text>
+          <Text style={PokeDetail.id}>#{Pokemon_information.id}</Text>
+        </View>
+        <View style={PokeDetail.types}>
+          {Pokemon_information.types.map((dados, index) => (
+            <View style={PokeDetail.ContainerType} key={index}>
+              <Text style={PokeDetail.Typename}>{dados.type.name}</Text>
+            </View>
+          ))}
+        </View>
+        <ConditionalRender conditional={(data || []).length}>
+          <View style={PokeDetail.ContainerImage}>
+            <Animated.ScrollView
+              horizontal={true}
+              onScroll={scroll_events}
+              overScrollMode='never'
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={width}
+              decelerationRate='fast'
+              scrollEventThrottle={16}
+            >
+              {(data || []).map((pokemon, index) => (
+                <Pokemon
+                  key={index}
+                  pokemon_data={pokemon}
+                  index={index}
+                  pokemon_id={pokemon.id}
+                  scroll_position={position_x}
+                />
+              ))}
+            </Animated.ScrollView>
           </View>
-        ))}
-      </View>
-      <ConditionalRender conditional={pokemon_informations_others.length}>
-        <View style={PokeDetail.ContainerImage}>
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled={true}
-            scrollEventThrottle={16}
-            overScrollMode='never'
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: ScrollX } } }],
-              { useNativeDriver: false }
-            )}
-            contentContainerStyle={{ alignItems: 'center' }}
-            snapToInterval={width - CONTAINER_POKEMON_IMAGE_WIDTH * 2}
-            bounces={false}
-            decelerationRate={0}
-            snapToAlignment='center'
-          >
-            {pokemon_informations_others.map((data, index) => {
-
-              const inputRange = [
-                (index - 2) * CONTAINER_POKEMON_IMAGE_WIDTH,
-                (index - 1) * CONTAINER_POKEMON_IMAGE_WIDTH,
-                index * CONTAINER_POKEMON_IMAGE_WIDTH
-              ];
-
-              const transform = ScrollX.interpolate({
-                inputRange,
-                outputRange: [.3, 1, .3]
-              });
-
-              if(data.name == 'space') {
-
-                return <View key={index} style={{ width: SPACE }} />
-
-              }
-              
-              return (
-
-                <SharedElement 
-                  id={`${data.id}`} 
-                  style={[PokeDetail.AnimatedImagePokemon]} 
-                  key={index} 
-                >
-                  <Animated.Image 
-                    style={[PokeDetail.AnimatedImagePokemon, { transform: [{ scale: transform }] }]} 
-                    source={{uri: data.sprites.other.home.front_default}}
-                  />
-                </SharedElement>
-
-              );
-
-            })}
-          </ScrollView>
-        </View>
+        </ConditionalRender>
       </ConditionalRender>
-      <ConditionalRender conditional={!pokemon_informations_others.length}>
-        <View style={PokeDetail.ContainerImage}>
-          <SharedElement id={`${pokemon.id}`} style={PokeDetail.AnimatedImagePokemon} >
-            <Image style={PokeDetail.AnimatedImagePokemon} source={{uri: pokemon.sprites.other.home.front_default}} />
-          </SharedElement>
-        </View>
-      </ConditionalRender>
-    </View>
+    </Animated.View>
   );
 
 }
